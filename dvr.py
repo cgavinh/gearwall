@@ -112,7 +112,7 @@ class AnalyzeDVR:
 
 
 if __name__ == "__main__":
-    import array_tools
+    import energy_arrays
     import utilities as ut
     import matplotlib.pyplot as plt
 
@@ -121,14 +121,14 @@ if __name__ == "__main__":
     freq = ut.Constants.convert(3300, 'wavenumbers', to_AU=True)
 
     grid = Grid((-grid_range,grid_range), 100).grid
-    kin_mat = array_tools.CM_1D_kin_mat(grid, interval='-infty_to_infty', mass=OH_mass)
+    kin_mat = energy_arrays.CM_1D_kin_mat(grid, interval='-infty_to_infty', mass=OH_mass)
     kinetic_matrix = kin_mat.matrix
 
     pot_opts = {'type': 'harmonic oscillator',
                 'mass': OH_mass,
                 'frequency': freq}
 
-    pot_mat = array_tools.AnalyticalPotMats(grid, pot_opts)
+    pot_mat = energy_arrays.AnalyticalPotMats(grid, pot_opts)
     potential_matrix = pot_mat.matrix
 
     file = '/Users/coire/McCoy/QOOH_repo/coire/DVR_dev/DVR_test'
