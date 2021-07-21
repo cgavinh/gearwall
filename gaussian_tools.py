@@ -253,5 +253,4 @@ class CoirePlots:
         self.ax.set_ylabel(self.axSettings['xlabel'])
         self.ax.title(self.axSettings['title'])
 
-    xvc
 
