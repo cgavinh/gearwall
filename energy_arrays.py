@@ -27,14 +27,14 @@ class CM_1D_kin_mat:
             self.matrix =  self.fill_array(kinE, len(self.grid), len(self.grid))
 
         if self.interval =='0_to_2pi':
-            N = len(self.grid)
-            coeff = 1/(2*self.mass)
+            N = (len(self.grid)-1)/2
+            coeff = 1/(2.*self.mass)
             for i in range(len(self.matrix)):
                 for j in range(len(self.matrix)):
                     if i == j:
-                        self.matrix[i][j] = coeff*((-1)**(i -j))*(N*(N+1))/3
+                        self.matrix[i][j] = coeff*(N*(N+1.))/3.
                     else:
-                        self.matrix[i][j] = coeff*((-1)**(i -j))*(np.cos((np.pi*(i-j))/(2*N+1))/(2*(np.sin((np.pi*(i-j))/(2*N+1)))**2))
+                        self.matrix[i][j] = coeff*((-1)**(i -j))*(np.cos((np.pi*(i-j))/(2.*N+1.))/(2.*(np.sin((np.pi*(i-j))/(2.*N+1.)))**2.))
 
 
     def fill_array(self, expression, nrows, ncolumns):

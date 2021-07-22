@@ -157,18 +157,18 @@ if __name__ == "__main__":
     pot_mat = energy_arrays.ScanPotMat(grid=grid, gaussian_results=gaussian_results, min_shift=True)
     potential_matrix = pot_mat.matrix"""
     CH3_mass = ut.Constants.reduced_mass('C-H-H-H', to_AU=True)
-    grid = Grid((0, 2 * np.pi), 1001, inclusive=False).grid
+    grid = Grid((0, 2 * np.pi), 101, inclusive=False).grid
 
     kin_mat = energy_arrays.CM_1D_kin_mat(grid, interval='0_to_2pi', mass=0.5)
     kinetic_matrix = kin_mat.matrix
     #plt.matshow(kinetic_matrix)
 
-    """pot_opts = {'type': 'periodic',
+    pot_opts = {'type': 'periodic',
                 'alpha':ut.Constants.convert(200, 'wavenumbers', to_AU=True)}
     pot_mat = energy_arrays.PredefinedPotMats(grid=grid, pot_opts=pot_opts)
-    plt.plot(grid, pot_mat.array)
-    potential_matrix = pot_mat.matrix"""
-    potential_matrix = np.diag(np.zeros(len(grid)))
+    #plt.plot(grid, pot_mat.array)
+    potential_matrix = pot_mat.matrix
+    #potential_matrix = np.diag(np.zeros(len(grid)))
 
     file = '/Users/coire/McCoy/QOOH_repo/coire/DVR_dev/water_monomer_rpath/DVR_test'
     test = DVR_1D(grid=grid, kinetic_matrix=kinetic_matrix, potential_matrix=potential_matrix, file_name=file)
@@ -177,7 +177,7 @@ if __name__ == "__main__":
     anl_test = AnalyzeDVR(results_file=file, in_AU=False, energy_units='wavenumbers', grid_unit='radians')
     anl_test.get_frequency((0,1))
     anl_test.rephase_wfns([0])
-    anl_test.plot_wfns(states=[0, 1, 2],
+    anl_test.plot_wfns(states=[0, 1, 3],
                        pot=np.diag(potential_matrix),
                        on_pot=False)
                        #x_range=[-0.4, 0.5],
