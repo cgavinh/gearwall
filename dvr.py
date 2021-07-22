@@ -167,8 +167,8 @@ if __name__ == "__main__":
                 'alpha':ut.Constants.convert(200, 'wavenumbers', to_AU=True)}
     pot_mat = energy_arrays.PredefinedPotMats(grid=grid, pot_opts=pot_opts)
     #plt.plot(grid, pot_mat.array)
-    potential_matrix = pot_mat.matrix
-    #potential_matrix = np.diag(np.zeros(len(grid)))
+    #potential_matrix = pot_mat.matrix
+    potential_matrix = np.diag(np.zeros(len(grid)))
 
     file = '/Users/coire/McCoy/QOOH_repo/coire/DVR_dev/water_monomer_rpath/DVR_test'
     test = DVR_1D(grid=grid, kinetic_matrix=kinetic_matrix, potential_matrix=potential_matrix, file_name=file)
