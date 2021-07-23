@@ -2,36 +2,64 @@ import numpy as np
 from scipy import linalg
 import utilities as ut
 
-#CM_1D based on Colbert-Miller DVR described here: http://www.cchem.berkeley.edu/millergrp/pdf/243.pdf
+"""
+Future DVR implementations (nD DVRs) will be placed here
+"""
 class DVR_1D:
     def __init__(self,
                  grid,
                  kinetic_matrix,
                  potential_matrix,
-                 file_name,
+                 filename,
                  save_method='pickle'):
+        """
+        M_1D based on Colbert-Miller DVR described here: http://www.cchem.berkeley.edu/millergrp/pdf/243.pdf
+        To use this DVR, supply the class with a grid, a kinetic energy matrix, and a potential energy
+        matrix. The DVR does the incredibly complex step of saying H = T + V and diagonalizing the resulting H matrix.
+        The actually thinking happens when constructing the matrices...
+        The results are put in a dictionary and saved by the method of your choosing (pickling or npz, right now just pickle)
 
+        :param grid: the CM 1d DVR grid. and equally-spaced array of points along your coordinate of interest
+        :type grid: np.ndarray
+        :param kinetic_matrix: the matrix representation of your kinetic energy operator in the CM-DVR basis
+        :type kinetic_matrix: np.ndarray
+        :param potential_matrix: the matrix representation of your potential energy. This is the electronic potential energy of your system at each grid point.
+        :type potential_matrix: np.ndarray
+        :param filename: what to name the results file
+        :type filename: str
+        :param save_method: how to save the results file (e.g. 'pickle', 'npz', etc.)
+        :type save_method: str
+        """
         self.grid = grid
         self.kinetic_matrix = kinetic_matrix
         self.potential_matrix = potential_matrix
-        self.file_name = file_name
+        self.filename = filename
         self.save_method = save_method
 
     def run(self):
+        """
+        H = T + V
+        returns the eigenvalues and eigenvectors of the diagonalized matrix as energies and wfns in a dictionary
+        """
         hamiltonian_matrix = self.kinetic_matrix + self.potential_matrix
-        energies, wfn_coeffs = linalg.eigh(hamiltonian_matrix)
-        results = {"grid": self.grid, "energies": energies, "wfns": wfn_coeffs}
-        self.save(results)
-
-    def save(self, results):
-        if self.save_method == 'pickle':
-            ut.pickle_save(results, self.file_name)
+        eigvals, eigvecs = linalg.eigh(hamiltonian_matrix)
+        results = {"grid": self.grid, "energies": eigvals, "wfns": eigvecs}
+        ut.save(object=results, method= self.save_method, filename=self.filename)
 
 class Grid:
     def __init__(self,
                  domain,
                  num_points,
                  inclusive=True):
+        """
+        makes an equally-spaced grid on the interval [domain[0],domain[1]] if inclusive=True or [domain[0],domain[1]) if inclusive=False
+        :param domain: [start, stop]
+        :type domain: tuple
+        :param num_points: the number of grid points that you want
+        :type num_points: int
+        :param inclusive: do you want to include the last point in the grid?
+        :type inclusive: bool
+        """
         self.domain = domain
         self.num_points = num_points
         self.inclusive = inclusive
@@ -39,20 +67,32 @@ class Grid:
 
     def initialize(self):
         """
-        np.linspace has input endpoint, if True, it includes stop, else excludes it
-        :return:
+        makes the grid using np.linspace
+        np.linspace has the native argument "endpoint" which include the endpoint in the resulting grid only if true
         """
         self.grid = np.linspace(self.domain[0], self.domain[1], self.num_points, endpoint=self.inclusive)
 
 class AnalyzeDVR:
     def __init__(self,
                  results_file,
-                 file_type='pickle',
+                 save_method='pickle',
                  in_AU = True,
                  energy_units='wavenumbers',
                  grid_unit='angstroms'):
+        """
+        reads DVR results from a file for analysis. All unit conversions are done when the file is read and all subsequent analysis methods assume the data is in the form that you want.
+        :param results_file: the file that has the DVR results
+        :type results_file: str
+        :param save_method: the method used to save the DVR results (e.g. 'pickle, 'npz', etc.)
+        :type save_method: str
+        :param in_AU: were the DVR results saved in atomic units, default is True bc my DVR code only deals with atomic units
+        :type in_AU: bool
+        :param energy_units: the energy units you want to deal with. Default is 'wavenumbers'
+        :type energy_units: str
+        :param grid_unit: the units you want your DVR grid in (e.g. 'angstroms', 'radians', etc).
+        """
         self.results_file = results_file
-        self.file_type = file_type
+        self.save_method = save_method
         self._results = None
         self.in_AU = in_AU
         self.energy_units=energy_units
@@ -67,7 +107,7 @@ class AnalyzeDVR:
         return self._results
 
     def get_results(self):
-        results = ut.pickle_load(self.results_file)
+        results = ut.load(filename=self.results_file,method=self.save_method)
         return results
 
     def get_frequency(self, excitation):
@@ -171,7 +211,7 @@ if __name__ == "__main__":
     potential_matrix = np.diag(np.zeros(len(grid)))
 
     file = '/Users/coire/McCoy/QOOH_repo/coire/DVR_dev/water_monomer_rpath/DVR_test'
-    test = DVR_1D(grid=grid, kinetic_matrix=kinetic_matrix, potential_matrix=potential_matrix, file_name=file)
+    test = DVR_1D(grid=grid, kinetic_matrix=kinetic_matrix, potential_matrix=potential_matrix, filename=file)
     test.run()
 
     anl_test = AnalyzeDVR(results_file=file, in_AU=False, energy_units='wavenumbers', grid_unit='radians')
@@ -185,7 +225,7 @@ if __name__ == "__main__":
                        #scale=0.03,
                        #save_file=file + '_0_2pi.png')
     zpe = anl_test.get_zpe()
-    test = DVR_1D(grid=grid, kinetic_matrix=kinetic_matrix, potential_matrix=potential_matrix, file_name=file)
+    test = DVR_1D(grid=grid, kinetic_matrix=kinetic_matrix, potential_matrix=potential_matrix, filename=file)
     test.run()
     print("hello")
 
