@@ -144,7 +144,13 @@ def save(object, method, filename):
     if method == 'pickle':
         pickle_save(dObj=object, sFilename=filename)
 
+
+
 def load(method, filename):
     if method == 'pickle':
         obj = pickle_load(sFilename=filename)
+    if method == 'npz':
+        obj = np.load(filename)
     return obj
+
+#class Sheet:

@@ -53,7 +53,7 @@ class CM_1D_kin_mat:
 
 class PredefinedPotMats:
     """
-    for HO, pot_opts should include (type='harmonic oscillator', mass, and frequency)
+    for HO, pot_opts should include (type='harmonic oscillator', mass, frequency, and re)
     for MO, pot_opts should include (type='morse oscillator', alpha, dissociation_energy, re)
     """
     def __init__(self,
@@ -89,7 +89,7 @@ class PredefinedPotMats:
         # Remember: The potential matrix is 0 for all terms off the diagonal for any type of potential in DVR
         pot_grid = np.zeros(self.grid.shape)
         for i in range(len(self.grid)):
-            pot_grid[i] = (1 / 2) * self.pot_opts['mass'] * self.pot_opts['frequency'] ** 2 * self.grid[i] ** 2
+            pot_grid[i] = (1 / 2) * self.pot_opts['mass'] * self.pot_opts['frequency'] ** 2 * (self.grid[i]-self.pot_opts['re']) ** 2
         pot_matrix = np.diag(pot_grid)
         return pot_grid, pot_matrix
 

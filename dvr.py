@@ -1,6 +1,10 @@
 import numpy as np
 from scipy import linalg
-import utilities as ut
+import utilities as uts
+import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import energy_arrays
+import math
 
 """
 Future DVR implementations (nD DVRs) will be placed here
@@ -43,8 +47,12 @@ class DVR_1D:
         """
         hamiltonian_matrix = self.kinetic_matrix + self.potential_matrix
         eigvals, eigvecs = linalg.eigh(hamiltonian_matrix)
-        results = {"grid": self.grid, "energies": eigvals, "wfns": eigvecs}
-        ut.save(object=results, method= self.save_method, filename=self.filename)
+        results = {"grid": self.grid,
+                   "potential":self.potential_matrix,
+                   "kinetic":self.kinetic_matrix,
+                   "energies": eigvals,
+                   "wfns": eigvecs}
+        uts.save(object=results, method= self.save_method, filename=self.filename)
 
 class Grid:
     def __init__(self,
@@ -85,7 +93,7 @@ class AnalyzeDVR:
         :type results_file: str
         :param save_method: the method used to save the DVR results (e.g. 'pickle, 'npz', etc.)
         :type save_method: str
-        :param in_AU: were the DVR results saved in atomic units, default is True bc my DVR code only deals with atomic units
+        :param in_AU: Are the DVR results loaded in atomic units, default is True bc my DVR code only deals with atomic units
         :type in_AU: bool
         :param energy_units: the energy units you want to deal with. Default is 'wavenumbers'
         :type energy_units: str
@@ -97,7 +105,7 @@ class AnalyzeDVR:
         self.in_AU = in_AU
         self.energy_units=energy_units
         self.grid_unit=grid_unit
-        if not in_AU:
+        if in_AU:
             self.convert_units()
 
     @property
@@ -107,7 +115,10 @@ class AnalyzeDVR:
         return self._results
 
     def get_results(self):
-        results = ut.load(filename=self.results_file,method=self.save_method)
+        results = uts.load(filename=self.results_file,method=self.save_method)
+        wfn = results['wfns'][:,0]
+        phase = np.sign(wfn[np.argmax(np.abs(wfn))])
+        results['wfns'] = results['wfns'] * phase
         return results
 
     def get_frequency(self, excitation):
@@ -116,49 +127,126 @@ class AnalyzeDVR:
 
     def convert_units(self):
         if self.grid_unit != 'radians':
-            self.results['grid'] = ut.Constants.convert(self.results['grid'], self.grid_unit, to_AU=False)
-            self.results['energies'] = ut.Constants.convert(self.results['energies'], self.energy_units, to_AU=False)
-        self.results['wfns'] = ut.Constants.convert(self.results['wfns'], self.energy_units, to_AU=False)
+            self.results['grid'] = uts.Constants.convert(self.results['grid'], self.grid_unit, to_AU=False)
+        self.results['energies'] = uts.Constants.convert(self.results['energies'], self.energy_units, to_AU=False)
+        self.results['potential'] = uts.Constants.convert(self.results['potential'], self.energy_units, to_AU=False)
+        self.results['kinetic'] = uts.Constants.convert(self.results['kinetic'], self.energy_units, to_AU=False)
 
-    def rephase_wfns(self, states):
-        """
-        states is a list of the wfns that need to be re-phased
-        :param states:
-        :return:
-        """
-        phases = np.ones(len(self.results['grid']))
-        for state in states:
-            phases[state] = -1
-        self.results['wfns'] = self.results['wfns']*phases
 
-    def plot_wfns(self, states, pot = [], on_pot=False, x_range=[], y_range=[], scale=1, save_file=''):
+    def plot_wfns(self, states, on_pot=False, x_range=[], y_range=[], scale=1, save_file=''):
         if not len(x_range) > 1:
             x_range = [self.results['grid'].min(), self.results['grid'].max()]
-        x_min = np.argmax(self.results['grid'] >= x_range[0])
-        x_max = np.argmin(self.results['grid'] < x_range[1]) - 1
+        x_argmin = np.argmax(self.results['grid'] >= x_range[0])
+        x_argmax = np.argmin(self.results['grid'] <= x_range[1]) - 1
         if not isinstance(states, list): states = [states]
+
+        evenly_spaced_interval = np.linspace(0,0.9, len(states))
+        colors = [cm.viridis(x) for x in evenly_spaced_interval]
+
         fig = plt.figure()
         ax = plt.axes()
+        i=0
         for state in states:
-            ax.plot(self.results['grid'][x_min:x_max],
-                    (self.results['wfns'][:,state][x_min:x_max]*scale)+self.results['energies'][state],
-                    label=r'$\psi_{%s}$' %state)
-        if on_pot and len(pot)>0:
-            if self.in_AU:
-                ax.plot(self.results['grid'][x_min:x_max], pot[x_min:x_max], label="potential")
-            else:
-                ax.plot(self.results['grid'][x_min:x_max],
-                        ut.Constants.convert(pot[x_min:x_max], self.energy_units, to_AU=False),
-                        label="potential")
+            ax.plot(self.results['grid'][x_argmin:x_argmax],
+                    (self.results['wfns'][:,state][x_argmin:x_argmax] * scale) + self.results['energies'][state],
+                    label=r'$\psi_{%s}$' %state,
+                    color=colors[i])
+            ax.axhline(y=self.results['energies'][state], color=colors[i], linestyle='--')
+            i += 1
+
+        if on_pot:
+            ax.plot(self.results['grid'][x_argmin:x_argmax],
+                    np.diag(self.results['potential'])[x_argmin:x_argmax],
+                    label="potential", color='black',
+                    linewidth=2,
+                    linestyle='--')
+
         ax.set_xlim(x_range)
         if len(y_range) > 0:
             ax.set_ylim(y_range)
         #ax.set_xlabel(r'$\Delta r$')
+        plt.xlabel("rxn coordinate (Angstroms)")
+        plt.ylabel("Energy (cm-1)", labelpad=15)
         plt.legend()
+        plt.tight_layout()
         if save_file:
             plt.savefig(save_file)
         plt.show()
 
+    def plot_energies(self, energies_range=[], energy_step=1, save_file='', x_range=[]):
+        if not len(x_range) > 1:
+            x_range = [self.results['grid'].min(), self.results['grid'].max()]
+        x_argmin = np.argmax(self.results['grid'] >= x_range[0])
+        x_argmax = np.argmin(self.results['grid'] <= x_range[1]) - 1
+
+        if not len(energies_range) > 0:
+            energies_range = [0, len(self.results['energies'])]
+        energies_to_plot = np.arange(energies_range[0], energies_range[1], energy_step)
+
+        evenly_spaced_interval = np.linspace(0,0.9, len(energies_to_plot))
+        colors = [cm.viridis(x) for x in evenly_spaced_interval]
+
+        fig = plt.figure()
+        ax = plt.axes()
+        ax.plot(self.results['grid'][x_argmin:x_argmax],
+                np.diag(self.results['potential'])[x_argmin:x_argmax],
+                label="potential", color='black',
+                linewidth=2,
+                linestyle='--')
+        i=0
+        for e in energies_to_plot:
+            ax.axhline(y=self.results['energies'][e],
+                       color=colors[i])
+            i+=1
+        plt.xlabel("rxn coordinate (Angstroms)")
+        plt.ylabel("Energy (cm-1)", labelpad=15)
+        plt.tight_layout()
+        if save_file:
+            plt.savefig(save_file)
+        plt.show()
+
+    def plot_ind_wfns(self, wfns_range=[0,8], wfns_step=1, scale=1, x_range=[], save_file=''):
+        if not len(x_range) > 1:
+            x_range = [self.results['grid'].min(), self.results['grid'].max()]
+        x_argmin = np.argmax(self.results['grid'] >= x_range[0])
+        x_argmax = np.argmin(self.results['grid'] <= x_range[1]) - 1
+        wfns_to_plot = np.arange(wfns_range[0], wfns_range[1]+1, wfns_step)
+        rows = math.ceil(len(wfns_to_plot)/3)
+
+        evenly_spaced_interval = np.linspace(0, 0.9, len(wfns_to_plot))
+        colors = [cm.viridis(x) for x in evenly_spaced_interval]
+
+        fig, axs = plt.subplots(rows, 3, sharey=True, sharex=True)
+        i=0
+        for r in range(rows):
+            for c in range(3):
+                if i < len(wfns_to_plot):
+                    state = wfns_to_plot[i]
+                    axs[r,c].plot(self.results['grid'][x_argmin:x_argmax],
+                            np.diag(self.results['potential'])[x_argmin:x_argmax],
+                            color='black',
+                            linewidth=2,
+                            linestyle='--')
+                    axs[r,c].plot(self.results['grid'][x_argmin:x_argmax],
+                                  (self.results['wfns'][:, state][x_argmin:x_argmax] * scale) + self.results['energies'][state],
+                                  label=r'$\rm{\psi_{%s}}$' % state,
+                                  color=colors[i])
+                    axs[r,c].axhline(y=self.results['energies'][state], color=colors[i], linestyle='--')
+                    axs[r,c].set_xlim(x_range)
+                    axs[r,c].legend()
+                    i+=1
+        plt.setp(axs, ylim=axs[rows-1, 2].get_ylim())
+        # add a big axis, hide frame
+        fig.add_subplot(111, frameon=False)
+        # hide tick and tick label of the big axis
+        plt.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
+        plt.xlabel("rxn coordinate (Angstroms)")
+        plt.ylabel("Energy (cm-1)", labelpad=15)
+        #plt.subplots_adjust(wspace=0, hspace=0)
+        plt.tight_layout()
+        if save_file:
+            plt.savefig(save_file)
+        plt.show()
 
     def get_zpe(self):
         return self.results['energies'][0]
@@ -167,10 +255,9 @@ class AnalyzeDVR:
 
 
 
-if __name__ == "__main__":
-    import energy_arrays
-    import utilities as ut
-    import matplotlib.pyplot as plt
+
+#if __name__ == "__main__":
+
 
     """OH_mass = ut.Constants.reduced_mass('O-H', to_AU=True)
     grid_range = ut.Constants.convert(1, 'angstroms', to_AU=True)
@@ -196,7 +283,7 @@ if __name__ == "__main__":
 
     pot_mat = energy_arrays.ScanPotMat(grid=grid, gaussian_results=gaussian_results, min_shift=True)
     potential_matrix = pot_mat.matrix"""
-    CH3_mass = ut.Constants.reduced_mass('C-H-H-H', to_AU=True)
+    """CH3_mass = uts.Constants.reduced_mass('C-H-H-H', to_AU=True)
     grid = Grid((0, 2 * np.pi), 101, inclusive=False).grid
 
     kin_mat = energy_arrays.CM_1D_kin_mat(grid, interval='0_to_2pi', mass=0.5)
@@ -204,7 +291,7 @@ if __name__ == "__main__":
     #plt.matshow(kinetic_matrix)
 
     pot_opts = {'type': 'periodic',
-                'alpha':ut.Constants.convert(200, 'wavenumbers', to_AU=True)}
+                'alpha':uts.Constants.convert(200, 'wavenumbers', to_AU=True)}
     pot_mat = energy_arrays.PredefinedPotMats(grid=grid, pot_opts=pot_opts)
     #plt.plot(grid, pot_mat.array)
     #potential_matrix = pot_mat.matrix
@@ -227,7 +314,7 @@ if __name__ == "__main__":
     zpe = anl_test.get_zpe()
     test = DVR_1D(grid=grid, kinetic_matrix=kinetic_matrix, potential_matrix=potential_matrix, filename=file)
     test.run()
-    print("hello")
+    print("hello")"""
 
 
 
