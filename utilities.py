@@ -1,4 +1,5 @@
 import pickle
+import numpy as np
 # Thanks Ryan and Mark for writing this
 __all__ = ['Constants', 'get_atomic_num', 'get_atomic_string']
 
@@ -74,13 +75,15 @@ class Constants:
     def convert(cls, val, unit, to_AU=True):
         """
         :param val: The value or values that will be converted
-        :type val: np.ndarray
+        :type val: number or list, converts to np.ndarray if not
         :param unit: The units (not atomic units) that we will be converting to or from
         :type unit: str
         :param to_AU: If true, converting from non-a.u. to a.u.  If false, converting to a.u. from non-a.u.
         :type to_AU:boolean
         :return: converted values
         """
+        if isinstance(val, list): val = np.array(val)
+        if isinstance(val, tuple): val = np.array(val)
         vv = cls.atomic_units[unit]
         return (val * vv) if to_AU else (val / vv)
 

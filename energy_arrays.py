@@ -2,6 +2,7 @@ import numpy as np
 import utilities as ut
 import gaussian_tools as gt
 from scipy import interpolate
+import matplotlib.pyplot as plt
 
 class CM_1D_kin_mat:
     def __init__(self,
@@ -108,21 +109,41 @@ class GaussianPots:
         self.grid = grid
         self.frames = gt.GLogInterpreter(files)
 
-class ScanPotMat:
-    """ energy_array should be 2 x N with coordinates and  energies"""
+"""class ScanPotMat:
     def __init__(self,
                  grid,
-                 gaussian_results,
-                 min_shift=False):
+                 scan_results,
+                 min_shift=True,
+                 int_opts):
         self.grid = grid
-        self.gaussian_results = gaussian_results
+        self.scan_results = scan_results
         self.min_shift = min_shift
+        self.int_opts = int_opts
         self.initialize()
 
 
     def initialize(self):
-        f = interpolate.splrep(self.gaussian_results[0], self.gaussian_results[1], k=3) #cubic spline
-        self.pot_array =  interpolate.splev(self.grid, f)
+        f_cubic = interpolate.interp1d(self.scan_results[0],
+                                       self.scan_results[1],
+                                       kind='cubic', fill_value=np.nan,
+                                       bounds_error=False)  # cubic spline
+        f_linear = interpolate.interp1d(self.scan_results[0],
+                                        self.scan_results[1],
+                                        kind='linear', fill_value='extrapolate',
+                                        bounds_error=False)  # linear spline
+        if self.int_opts['ext']:
+            if self.int_opts['in_range'] == 'cubic':
+
+
+            self.pot_array  = np.where(np.isnan(f_cubic(self.grid)), f_linear(self.grid), f_cubic(self.grid))
         if self.min_shift:
             self.pot_array = self.pot_array - np.min(self.pot_array)
         self.matrix =  np.diag(self.pot_array)
+
+    def plot_pot(self):
+        fig = plt.figure()
+        axes = plt.axes()
+        plt.scatter(self.scan_results[0], self.scan_results[1], label="input data")
+        plt.plot(self.grid, self.pot_array, label="interpolated potential")
+        plt.legend()
+        plt.show()"""

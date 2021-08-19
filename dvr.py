@@ -48,7 +48,7 @@ class DVR_1D:
         hamiltonian_matrix = self.kinetic_matrix + self.potential_matrix
         eigvals, eigvecs = linalg.eigh(hamiltonian_matrix)
         results = {"grid": self.grid,
-                   "potential":self.potential_matrix,
+                   "potential":np.diag(self.potential_matrix),
                    "kinetic":self.kinetic_matrix,
                    "energies": eigvals,
                    "wfns": eigvecs}
@@ -58,7 +58,7 @@ class Grid:
     def __init__(self,
                  domain,
                  num_points,
-                 inclusive=True):
+                 inclusive=True,):
         """
         makes an equally-spaced grid on the interval [domain[0],domain[1]] if inclusive=True or [domain[0],domain[1]) if inclusive=False
         :param domain: [start, stop]
@@ -116,9 +116,10 @@ class AnalyzeDVR:
 
     def get_results(self):
         results = uts.load(filename=self.results_file,method=self.save_method)
-        wfn = results['wfns'][:,0]
-        phase = np.sign(wfn[np.argmax(np.abs(wfn))])
-        results['wfns'] = results['wfns'] * phase
+        for i in range(len(results['wfns'])):
+            wfn = results['wfns'][:,i]
+            phase = np.sign(wfn[np.argmax(np.abs(wfn))])
+            results['wfns'][:,i] = results['wfns'][:,i] * phase
         return results
 
     def get_frequency(self, excitation):
@@ -156,7 +157,7 @@ class AnalyzeDVR:
 
         if on_pot:
             ax.plot(self.results['grid'][x_argmin:x_argmax],
-                    np.diag(self.results['potential'])[x_argmin:x_argmax],
+                    self.results['potential'][x_argmin:x_argmax],
                     label="potential", color='black',
                     linewidth=2,
                     linestyle='--')
@@ -173,7 +174,7 @@ class AnalyzeDVR:
             plt.savefig(save_file)
         plt.show()
 
-    def plot_energies(self, energies_range=[], energy_step=1, save_file='', x_range=[]):
+    def plot_energies(self, energies_range=[], energy_step=1, save_file='', x_range=[], y_range=[]):
         if not len(x_range) > 1:
             x_range = [self.results['grid'].min(), self.results['grid'].max()]
         x_argmin = np.argmax(self.results['grid'] >= x_range[0])
@@ -189,7 +190,7 @@ class AnalyzeDVR:
         fig = plt.figure()
         ax = plt.axes()
         ax.plot(self.results['grid'][x_argmin:x_argmax],
-                np.diag(self.results['potential'])[x_argmin:x_argmax],
+                self.results['potential'][x_argmin:x_argmax],
                 label="potential", color='black',
                 linewidth=2,
                 linestyle='--')
@@ -198,6 +199,9 @@ class AnalyzeDVR:
             ax.axhline(y=self.results['energies'][e],
                        color=colors[i])
             i+=1
+        ax.set_xlim(x_range)
+        if len(y_range) > 0:
+            ax.set_ylim(y_range)
         plt.xlabel("rxn coordinate (Angstroms)")
         plt.ylabel("Energy (cm-1)", labelpad=15)
         plt.tight_layout()
@@ -205,7 +209,7 @@ class AnalyzeDVR:
             plt.savefig(save_file)
         plt.show()
 
-    def plot_ind_wfns(self, wfns_range=[0,8], wfns_step=1, scale=1, x_range=[], save_file=''):
+    def plot_ind_wfns(self, wfns_range=[0,8], wfns_step=1, scale=1, x_range=[], y_range=[], save_file=''):
         if not len(x_range) > 1:
             x_range = [self.results['grid'].min(), self.results['grid'].max()]
         x_argmin = np.argmax(self.results['grid'] >= x_range[0])
@@ -223,7 +227,7 @@ class AnalyzeDVR:
                 if i < len(wfns_to_plot):
                     state = wfns_to_plot[i]
                     axs[r,c].plot(self.results['grid'][x_argmin:x_argmax],
-                            np.diag(self.results['potential'])[x_argmin:x_argmax],
+                            self.results['potential'][x_argmin:x_argmax],
                             color='black',
                             linewidth=2,
                             linestyle='--')
@@ -234,6 +238,9 @@ class AnalyzeDVR:
                     axs[r,c].axhline(y=self.results['energies'][state], color=colors[i], linestyle='--')
                     axs[r,c].set_xlim(x_range)
                     axs[r,c].legend()
+                    axs[r,c].set_xlim(x_range)
+                    if len(y_range) > 0:
+                        axs[r,c].set_ylim(y_range)
                     i+=1
         plt.setp(axs, ylim=axs[rows-1, 2].get_ylim())
         # add a big axis, hide frame
@@ -278,10 +285,10 @@ class AnalyzeDVR:
     gaussian_grid = ut.Constants.convert(gaussian_grid, "angstroms", to_AU=True)
     gaussian_energies = np.flip(np.array([-0.30799, -0.32956, -0.35195, -0.37395, -0.39332, -0.40575,
                                           -0.40329, -0.37102, -0.28049, -0.07581, 0.35845])) + -76.0
-    gaussian_results = np.array([gaussian_grid, gaussian_energies])
+    scan_results = np.array([gaussian_grid, gaussian_energies])
 
 
-    pot_mat = energy_arrays.ScanPotMat(grid=grid, gaussian_results=gaussian_results, min_shift=True)
+    pot_mat = energy_arrays.ScanPotMat(grid=grid, scan_results=scan_results, min_shift=True)
     potential_matrix = pot_mat.matrix"""
     """CH3_mass = uts.Constants.reduced_mass('C-H-H-H', to_AU=True)
     grid = Grid((0, 2 * np.pi), 101, inclusive=False).grid
