@@ -1,6 +1,6 @@
 # A space to test DVR code
 import dvr
-import energy_arrays
+import dvr_arrays
 import utilities as uts
 
 def test_infty_to_infty_1d_DVR(range_angstroms=(0.5, 1.5), re_angstroms=1, atom_str='O-H', num_grid_pts=50, freq_cm=3300):
@@ -14,11 +14,11 @@ def test_infty_to_infty_1d_DVR(range_angstroms=(0.5, 1.5), re_angstroms=1, atom_
                 'mass': mass_me,
                 'frequency': freq_ha,
                 're': re_bohr}
-    potential_matrix = energy_arrays.PredefinedPotMats(grid=grid_bohr,
-                                                       pot_opts=pot_opts)
-    kinetic_matrix = energy_arrays.CM_1D_kin_mat(grid=grid_bohr,
-                                                 interval='-infty_to_infty',
-                                                 mass=mass_me)
+    potential_matrix = dvr_arrays.PredefinedPotMats(grid=grid_bohr,
+                                                    pot_opts=pot_opts)
+    kinetic_matrix = dvr_arrays.CM_1D_kin_mat(grid=grid_bohr,
+                                              interval='-infty_to_infty',
+                                              mass=mass_me)
     dvr_test = dvr.DVR_1D(grid=grid_bohr,
                           kinetic_matrix=kinetic_matrix.matrix,
                           potential_matrix=potential_matrix.matrix,

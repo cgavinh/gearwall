@@ -3,7 +3,7 @@ from scipy import linalg
 import utilities as uts
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-import energy_arrays
+import dvr_arrays
 import math
 
 """
@@ -43,7 +43,8 @@ class DVR_1D:
     def run(self):
         """
         H = T + V
-        returns the eigenvalues and eigenvectors of the diagonalized matrix as energies and wfns in a dictionary
+        saves the eigenvalues and eigenvectors of the diagonalized matrix as energies and wfns in a dictionary
+
         """
         hamiltonian_matrix = self.kinetic_matrix + self.potential_matrix
         eigvals, eigvecs = linalg.eigh(hamiltonian_matrix)
@@ -257,71 +258,6 @@ class AnalyzeDVR:
 
     def get_zpe(self):
         return self.results['energies'][0]
-
-
-
-
-
-
-#if __name__ == "__main__":
-
-
-    """OH_mass = ut.Constants.reduced_mass('O-H', to_AU=True)
-    grid_range = ut.Constants.convert(1, 'angstroms', to_AU=True)
-    freq = ut.Constants.convert(3300, 'wavenumbers', to_AU=True)
-
-    grid = Grid((-grid_range,grid_range), 100).grid
-    kin_mat = energy_arrays.CM_1D_kin_mat(grid, interval='-infty_to_infty', mass=OH_mass)
-    kinetic_matrix = kin_mat.matrix"""
-
-    """pot_opts = {'type': 'harmonic oscillator',
-                'mass': OH_mass,
-                'frequency': freq}
-
-    pot_mat = energy_arrays.PredefinedPotMats(grid, pot_opts)
-    potential_matrix = pot_mat.matrix
-    """
-    """gaussian_grid = np.flip(np.array([1.5, 1.4, 1.3, 1.2, 1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5])) -0.95785
-    gaussian_grid = ut.Constants.convert(gaussian_grid, "angstroms", to_AU=True)
-    gaussian_energies = np.flip(np.array([-0.30799, -0.32956, -0.35195, -0.37395, -0.39332, -0.40575,
-                                          -0.40329, -0.37102, -0.28049, -0.07581, 0.35845])) + -76.0
-    scan_results = np.array([gaussian_grid, gaussian_energies])
-
-
-    pot_mat = energy_arrays.ScanPotMat(grid=grid, scan_results=scan_results, min_shift=True)
-    potential_matrix = pot_mat.matrix"""
-    """CH3_mass = uts.Constants.reduced_mass('C-H-H-H', to_AU=True)
-    grid = Grid((0, 2 * np.pi), 101, inclusive=False).grid
-
-    kin_mat = energy_arrays.CM_1D_kin_mat(grid, interval='0_to_2pi', mass=0.5)
-    kinetic_matrix = kin_mat.matrix
-    #plt.matshow(kinetic_matrix)
-
-    pot_opts = {'type': 'periodic',
-                'alpha':uts.Constants.convert(200, 'wavenumbers', to_AU=True)}
-    pot_mat = energy_arrays.PredefinedPotMats(grid=grid, pot_opts=pot_opts)
-    #plt.plot(grid, pot_mat.array)
-    #potential_matrix = pot_mat.matrix
-    potential_matrix = np.diag(np.zeros(len(grid)))
-
-    file = '/Users/coire/McCoy/QOOH_repo/coire/DVR_dev/water_monomer_rpath/DVR_test'
-    test = DVR_1D(grid=grid, kinetic_matrix=kinetic_matrix, potential_matrix=potential_matrix, filename=file)
-    test.run()
-
-    anl_test = AnalyzeDVR(results_file=file, in_AU=False, energy_units='wavenumbers', grid_unit='radians')
-    anl_test.get_frequency((0,1))
-    anl_test.rephase_wfns([0])
-    anl_test.plot_wfns(states=[0, 1, 3],
-                       pot=np.diag(potential_matrix),
-                       on_pot=False)
-                       #x_range=[-0.4, 0.5],
-                       #y_range=[-2500,12000],
-                       #scale=0.03,
-                       #save_file=file + '_0_2pi.png')
-    zpe = anl_test.get_zpe()
-    test = DVR_1D(grid=grid, kinetic_matrix=kinetic_matrix, potential_matrix=potential_matrix, filename=file)
-    test.run()
-    print("hello")"""
 
 
 
