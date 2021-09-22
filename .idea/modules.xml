@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/CGH_Toolbox.iml" filepath="$PROJECT_DIR$/.idea/CGH_Toolbox.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../McUtils/.idea/McUtils.iml" filepath="$PROJECT_DIR$/../McUtils/.idea/McUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/../QOOH_repo/.idea/QOOH_repo.iml" filepath="$PROJECT_DIR$/../QOOH_repo/.idea/QOOH_repo.iml" />
     </modules>
   </component>

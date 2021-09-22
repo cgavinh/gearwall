@@ -29,6 +29,8 @@ class cube:
         a = open(self.filename, "r")
         lin = a.readlines()
         beginningE = int(lin[2].split()[0]) + 6
+        print(lin[2])
+        print(beginningE)
         linNum = 1
         atmCt = 0
         self.atmStr = []
@@ -63,10 +65,10 @@ class cube:
         xx = k.to_numpy()
         xxp = xx[np.logical_not(np.isnan(xx))]
         self.density = np.reshape(xxp, ndim)
-        self.cds = np.zeros(xxp.shape)
         self.cdsX = np.linspace(origin[0], origin[0] + delta * ndim[0], num=ndim[0])
         self.cdsY = np.linspace(origin[1], origin[1] + delta * ndim[1], num=ndim[1])
         self.cdsZ = np.linspace(origin[2], origin[2] + delta * ndim[2], num=ndim[2])
+        self.cds = {'x' : self.cdsX, 'y': self.cdsY, 'z':self.cdsZ}
         self.arr = np.meshgrid(self.cdsX, self.cdsY, self.cdsZ, indexing='ij')
         dxO = self.cdsX[1] - self.cdsX[0]
         dyO = self.cdsY[1] - self.cdsY[0]

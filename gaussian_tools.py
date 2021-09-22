@@ -7,6 +7,7 @@ import McUtils.GaussianInterface as GI
 import os, re
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
+import density_cube as dc
 
 class GLogInterpreter:
     def __init__(self, log_files):
@@ -100,7 +101,7 @@ class GLogPlotter:
 class FchkInterpreter:
     # Copied directly from https://github.com/rmhuch/QOOH/blob/master/FChkInterpreter.py
     #then modified
-    def __init__(self, fchks, **kwargs):
+    def __init__(self, fchks, cube_files=[], cubes=False,  **kwargs):
         self.params = kwargs
         if len(fchks) == 0:
             raise Exception('Nothing to interpret.')
@@ -112,6 +113,10 @@ class FchkInterpreter:
         self._MP2Energy = None
         self._atomicmasses = None
         self._atomicNumbers = None
+        self.cube_files = cube_files
+        self.cubes= cubes
+        if self.cubes:
+            self.initializeCubes()
 
     @property
     def cartesians(self):
@@ -167,13 +172,15 @@ class FchkInterpreter:
         """Pulls the Hessian (Force Constants) from a Gaussian Frequency output file
             :arg chk_file: a Gaussian Frequency formatted checkpoint file
             :returns hess: full Hessian of system as an np.array"""
-
+        hess = []
         for fchk in self.fchks:
             with GI.GaussianFChkReader(fchk) as reader:
                 parse = reader.parse("ForceConstants")
             forcies = parse["ForceConstants"]
+            hess.append(forcies)
+        h = np.array(hess)
         # ArrayPlot(forcies.array, colorbar=True).show()
-        return forcies.array
+        return h
 
     def get_grad(self):
         for fchk in self.fchks:
@@ -183,11 +190,14 @@ class FchkInterpreter:
         return grad
 
     def get_MP2energy(self):
+        energy = []
         for fchk in self.fchks:
             with GI.GaussianFChkReader(fchk) as reader:
                 parse = reader.parse("MP2 Energy")
             ens = parse["MP2 Energy"]
-        return ens
+            energy.append(ens)
+        e = np.array(energy)
+        return e
 
     def get_mass(self):
         for fchk in self.fchks:
@@ -202,6 +212,19 @@ class FchkInterpreter:
                 parse = reader.parse("AtomicNumbers")
             nums = parse["AtomicNumbers"]
         return nums
+
+    def initializeCubes(self):
+        ed_cds = []
+        ed_vals = []
+        for c in self.cube_files:
+            cube = dc.cube(c)
+            ed_cds.append(cube.cds)
+            ed_vals.append(cube.density)
+        self.ed_cds = np.array(ed_cds)
+        self.ed_vals = np.array(ed_vals)
+        print('hello')
+
+
 
 #class NormalModes:
     #def __init__(self):
