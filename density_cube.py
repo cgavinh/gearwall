@@ -29,8 +29,6 @@ class cube:
         a = open(self.filename, "r")
         lin = a.readlines()
         beginningE = int(lin[2].split()[0]) + 6
-        print(lin[2])
-        print(beginningE)
         linNum = 1
         atmCt = 0
         self.atmStr = []
@@ -78,4 +76,3 @@ class cube:
         shiftL = 1.0
         shiftR = 1.0
         cylRad = 1.0
-        print('hello')

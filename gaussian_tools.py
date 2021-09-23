@@ -101,7 +101,7 @@ class GLogPlotter:
 class FchkInterpreter:
     # Copied directly from https://github.com/rmhuch/QOOH/blob/master/FChkInterpreter.py
     #then modified
-    def __init__(self, fchks, cube_files=[], cubes=False,  **kwargs):
+    def __init__(self, fchks, cubes=False,  **kwargs):
         self.params = kwargs
         if len(fchks) == 0:
             raise Exception('Nothing to interpret.')
@@ -113,7 +113,7 @@ class FchkInterpreter:
         self._MP2Energy = None
         self._atomicmasses = None
         self._atomicNumbers = None
-        self.cube_files = cube_files
+        self._mullikens = None
         self.cubes= cubes
         if self.cubes:
             self.initializeCubes()
@@ -153,6 +153,12 @@ class FchkInterpreter:
         if self._atomicNumbers is None:
             self._atomicNumbers = self.get_atomicNumbers()
         return self._atomicNumbers
+
+    @property
+    def mullikens(self):
+        if self._mullikens is None:
+            self._mullikens = self.get_mullikens()
+        return self._mullikens
 
     def get_coords(self):
         """Uses McUtils parser to pull cartesian coordinates
@@ -213,16 +219,24 @@ class FchkInterpreter:
             nums = parse["AtomicNumbers"]
         return nums
 
+    def get_mullikens(self):
+        mulls = []
+        for fchk in self.fchks:
+            with GI.GaussianFChkReader(fchk) as reader:
+                parse = reader.parse("Mulliken Charges")
+            mulls.append(parse["Mulliken Charges"])
+        return np.array(mulls)
+
     def initializeCubes(self):
         ed_cds = []
         ed_vals = []
-        for c in self.cube_files:
-            cube = dc.cube(c)
+        for f in self.fchks:
+            print(f)
+            cube = dc.cube(os.path.splitext(f)[0] + '.cube')
             ed_cds.append(cube.cds)
             ed_vals.append(cube.density)
         self.ed_cds = np.array(ed_cds)
         self.ed_vals = np.array(ed_vals)
-        print('hello')
 
 
 
