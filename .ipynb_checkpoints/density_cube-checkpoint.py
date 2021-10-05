@@ -25,13 +25,14 @@ class cube:
                    11: 'Na',
                    55: 'Cs',
                    17: 'Cl',
-                   35: 'Br'}
+                   35: 'Br',
+                   53: 'I'}
         a = open(self.filename, "r")
         lin = a.readlines()
         beginningE = int(lin[2].split()[0]) + 6
         linNum = 1
         atmCt = 0
-        atmStr = []
+        self.atmStr = []
         ndim = []
         delta = []
         gridN = 0
@@ -52,7 +53,7 @@ class cube:
             elif 7 <= linNum <= beginningE:
                 splt = line.split()
                 xyzZ = [float(q) for q in splt][1:]
-                atmStr.append(atmDict[int(splt[0])])
+                self.atmStr.append(atmDict[int(splt[0])])
                 self.atmAr[atmCt] = xyzZ[1:]
                 atmCt += 1
             elif linNum > beginningE:
@@ -63,10 +64,10 @@ class cube:
         xx = k.to_numpy()
         xxp = xx[np.logical_not(np.isnan(xx))]
         self.density = np.reshape(xxp, ndim)
-        self.cds = np.zeros(xxp.shape)
         self.cdsX = np.linspace(origin[0], origin[0] + delta * ndim[0], num=ndim[0])
         self.cdsY = np.linspace(origin[1], origin[1] + delta * ndim[1], num=ndim[1])
         self.cdsZ = np.linspace(origin[2], origin[2] + delta * ndim[2], num=ndim[2])
+        self.cds = {'x' : self.cdsX, 'y': self.cdsY, 'z':self.cdsZ}
         self.arr = np.meshgrid(self.cdsX, self.cdsY, self.cdsZ, indexing='ij')
         dxO = self.cdsX[1] - self.cdsX[0]
         dyO = self.cdsY[1] - self.cdsY[0]
@@ -76,16 +77,3 @@ class cube:
         shiftL = 1.0
         shiftR = 1.0
         cylRad = 1.0
-
-
-if __name__ == "__main__":
-'''    c = cube(filename='../HOCl/br_hocl_tz.cube')
-
-
-    fig, ax = plt.subplots()
-    CS = ax.contourf(c.cdsX, c.cdsY, c.density[:,:,0].T)
-    #ax.clabel(CS, inline=True, fontsize=10)
-    #ax.set_title('Simplest default with labels')
-    CS.colorbar()
-    plt.show()
-    print('hello')'''

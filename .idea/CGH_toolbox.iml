@@ -6,5 +6,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="QOOH_repo" />
     <orderEntry type="module" module-name="McUtils" />
+    <orderEntry type="module" module-name="hocl" />
   </component>
 </module>

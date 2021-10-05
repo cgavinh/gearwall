@@ -25,7 +25,8 @@ class cube:
                    11: 'Na',
                    55: 'Cs',
                    17: 'Cl',
-                   35: 'Br'}
+                   35: 'Br',
+                   53: 'I'}
         a = open(self.filename, "r")
         lin = a.readlines()
         beginningE = int(lin[2].split()[0]) + 6

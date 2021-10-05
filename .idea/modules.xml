@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/.idea/CGH_Toolbox.iml" filepath="$PROJECT_DIR$/.idea/CGH_Toolbox.iml" />
       <module fileurl="file://$PROJECT_DIR$/../McUtils/.idea/McUtils.iml" filepath="$PROJECT_DIR$/../McUtils/.idea/McUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/../QOOH_repo/.idea/QOOH_repo.iml" filepath="$PROJECT_DIR$/../QOOH_repo/.idea/QOOH_repo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../hocl/.idea/hocl.iml" filepath="$PROJECT_DIR$/../hocl/.idea/hocl.iml" />
     </modules>
   </component>
 </project>
