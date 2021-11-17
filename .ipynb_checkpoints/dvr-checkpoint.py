@@ -3,7 +3,6 @@ from scipy import linalg
 import utilities as uts
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-import pandas as pd
 import dvr_arrays
 import math
 
@@ -259,18 +258,6 @@ class AnalyzeDVR:
 
     def get_zpe(self):
         return self.results['energies'][0]
-
-    def save_to_excel(self, num_wfns, save_file=''):
-        if len(save_file) == 0:
-            save_file=self.results_file + ".xlsx"
-        df = pd.DataFrame()
-        for key in self.results:
-            if key not in ['wfns', 'kinetic']:
-                df.insert(len(df.columns), key, self.results[key])
-        for i in range(num_wfns):
-            df.insert(len(df.columns), "psi_" + str(i), self.results['wfns'][:, i])
-        df.to_excel(save_file)
-
 
 
 
