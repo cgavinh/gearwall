@@ -1,0 +1,28 @@
+%nproc=28
+%mem=120GB
+%chk=/gscratch/ilahie/mccoygrp/coire_hocl/brhocl_pp/brhocl_pp_0_opt.chk
+# opt=(z-matrix) mp2/gen Pseudo=read density=current
+
+title
+0 1
+H
+O 1 r1
+N 2 r2 1 a1
+O 3 r3 2 a2 1 d3
+Variables
+ r1=0.97026274
+ r2=1.42776435
+ r3=1.17680217
+ a1=101.62778541
+ a2=110.70859147
+ d3=180.0
+
+
+
+
+
+
+
+
+
+

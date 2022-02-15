@@ -22,10 +22,10 @@ class CM_1D_kin_mat:
             coeff = 1 / (2 * self.mass * dx ** 2)
             def kinE(i, j):
                 if i == j:
-                    return coeff * ((-1) ** (i - j)) * (np.power(np.pi, 2) / 3)
+                    return ((-1) ** (i - j)) * (np.power(np.pi, 2) / 3)
                 else:
-                    return coeff * ((-1) ** (i - j)) * (2 / np.power((i - j), 2))
-            self.matrix =  self.fill_array(kinE, len(self.grid), len(self.grid))
+                    return ((-1) ** (i - j)) * (2 / np.power((i - j), 2))
+            self.matrix =  coeff * self.fill_array(kinE, len(self.grid), len(self.grid))
 
         if self.interval =='0_to_2pi':
             N = (len(self.grid)-1)/2

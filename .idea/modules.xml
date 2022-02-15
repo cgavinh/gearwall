@@ -3,9 +3,11 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/CGH_Toolbox.iml" filepath="$PROJECT_DIR$/.idea/CGH_Toolbox.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../McCode Academy/.idea/McCode Academy.iml" filepath="$PROJECT_DIR$/../McCode Academy/.idea/McCode Academy.iml" />
       <module fileurl="file://$PROJECT_DIR$/../McUtils/.idea/McUtils.iml" filepath="$PROJECT_DIR$/../McUtils/.idea/McUtils.iml" />
       <module fileurl="file://$PROJECT_DIR$/../QOOH_repo/.idea/QOOH_repo.iml" filepath="$PROJECT_DIR$/../QOOH_repo/.idea/QOOH_repo.iml" />
       <module fileurl="file://$PROJECT_DIR$/../hocl/.idea/hocl.iml" filepath="$PROJECT_DIR$/../hocl/.idea/hocl.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../mccoy_hoono/.idea/mccoy_hoono.iml" filepath="$PROJECT_DIR$/../mccoy_hoono/.idea/mccoy_hoono.iml" />
     </modules>
   </component>
 </project>

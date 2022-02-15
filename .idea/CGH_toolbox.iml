@@ -7,5 +7,7 @@
     <orderEntry type="module" module-name="QOOH_repo" />
     <orderEntry type="module" module-name="McUtils" />
     <orderEntry type="module" module-name="hocl" />
+    <orderEntry type="module" module-name="McCode Academy" />
+    <orderEntry type="module" module-name="mccoy_hoono" />
   </component>
 </module>

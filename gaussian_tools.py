@@ -8,6 +8,70 @@ import os, re
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 import density_cube as dc
+from string import Template
+import misc
+
+class GaussianResults:
+    '''
+    The purpose of this class is to combine the results from fchk and log files into a single object
+    What gets pulled from where depends on the type of job run
+    I am assuming this class will be updated a lot moving forward
+    '''
+    def __init__(self, files, **kwargs):
+        self.params = kwargs
+        if len(files) == 0:
+            raise Exception('Nothing to interpret.')
+        self.files = files
+        if not isinstance(files, list): self.files = [self.files]
+        self._MP2Energy = None
+        self._input_zmat = None
+
+    @property
+    def MP2Energy(self):
+        if self._MP2Energy is None:
+            self._MP2Energy = self.get_MP2energy()
+        return self._MP2Energy
+
+    @property
+    def input_zmat(self):
+        if self._input_zmat is None:
+            self._input_zmat = self.get_input_zmat()
+        return self._input_zmat
+
+    def get_MP2energy(self):
+        energy = []
+        for file in self.files:
+            with GI.GaussianFChkReader(file + '.fchk') as reader:
+                parse = reader.parse("MP2 Energy")
+            ens = parse["MP2 Energy"]
+            energy.append(ens)
+        e = np.array(energy)
+        return e
+
+    def get_input_zmat(self):
+        zmats = []
+        for f in self.files:
+            with GI.GaussianLogReader(f + '.log') as reader:
+                parse = reader.parse("InputZMatrix")
+            zmats.append(misc.zmat(g_str=parse["InputZMatrix"]))
+        return zmats
+
+
+
+class GaussianJob:
+    def __init__(self, params, filename):
+        self.params = params
+        self.filename=filename
+
+    def save_job(self):
+        with open(self.filename, 'w', newline='\n') as f:
+            for key in self.params:
+                f.write(self.params[key])
+
+
+
+
+
 
 class GLogInterpreter:
     def __init__(self, log_files):
@@ -15,6 +79,9 @@ class GLogInterpreter:
         if not isinstance(log_files, list): self.log_files = [self.log_files]
         self._Energy = None
         self._intCoords = None
+        self._dipole_moms = None
+        self._input_zmat = None
+        self.force_constants = None
 
     @property
     def Energy(self):
@@ -27,6 +94,18 @@ class GLogInterpreter:
         if self._intCoords is None:
             self._intCoords = self.get_intCoords()
         return self._intCoords
+
+    @property
+    def dipole_moms(self):
+        if self._dipole_moms is None:
+            self._dipole_moms = self.get_dipole_moms()
+        return self._dipole_moms
+
+    @property
+    def input_zmat(self):
+        if self._input_zmat is None:
+            self._input_zmat = self.get_input_zmat()
+        return self._input_zmat
 
     def get_Ens(self):
         energy_array = []
@@ -52,6 +131,39 @@ class GLogInterpreter:
             else:
                 coords = copy.deepcopy(temp_coords)
         return coords
+
+    def get_dipole_moms(self):
+        dipoles = {}
+        for f in self.log_files:
+            with GI.GaussianLogReader(f) as reader:
+                parse = reader.parse("DipoleMoments")
+            #print(parse["DipoleMoments"])
+            temp_dipoles = parse["DipoleMoments"]
+
+            if dipoles:
+                for key in dipoles.keys():
+                    dipoles[key] = np.append(dipoles[key],temp_dipoles[key])
+            else:
+                dipoles = copy.deepcopy(temp_dipoles)
+        return dipoles
+
+    def get_input_zmat(self):
+        zmats = []
+        for f in self.log_files:
+            with GI.GaussianLogReader(f) as reader:
+                parse = reader.parse("InputZMatrix")
+            zmats.append(misc.zmat(g_str= parse["InputZMatrix"]))
+        return zmats
+
+    def pull_forces(self):
+        for f in self.log_files:
+            with GI.GaussianLogReader(f) as reader:
+                parse = reader.parse("ForceConstants")
+            forces= parse["ForceConstants"]
+        self.force_constants=forces
+
+
+
 
 class GLogPlotter:
     def __init__(self, files):
@@ -106,7 +218,7 @@ class FchkInterpreter:
         if len(fchks) == 0:
             raise Exception('Nothing to interpret.')
         self.fchks = fchks
-        if not isinstance(fchks, list): self.log_files = [self.fchks]
+        if not isinstance(fchks, list): self.fchks = [self.fchks]
         self._hessian = None
         self._cartesians = None  # dictionary of cartesian coordinates keyed by (x, y) distances
         self._gradient = None
