@@ -13,9 +13,9 @@ if __name__ == "__main__":
     atoms = ['H', 'O', 'O', 'N', 'O']
     specs = np.array([[1, 2, 3, 4], [1, 2, 3], [1, 2]])
     names = np.array([['r1', 'r2', 'r3', 'r4'], ['a1', 'a2', 'a3'], ['d1', 'd2']])
-    vals = np.array([[0.96897556, 1.45491931, 1.45878406, 1.17072885],
-                     [97.59494903, 102.29752444, 109.06955123],
-                     [180., 180.]])
+    vals = np.array([[0.98537664, 1.42673666, 1.38110764, 1.19478846],
+                     [100.6355057, 113.13777052, 114.33392022],
+                     [0., 0.]])
     units = ["Angstroms", "Degrees"]
     hoono_eq = misc.zmat(atoms=atoms, easy_build_dict={'specs':specs, 'names':names, 'vals':vals, 'units':units})
     # hoono_eq_log = gt.GLogInterpreter(log_files='../mccoy_hoono/hoono_eq.log')
@@ -45,29 +45,30 @@ if __name__ == "__main__":
     #misc.zmat()
     # result = gt.GaussianResults(files=['../mccoy_hoono/explore_disps/hoono_d2_176p1845'])
     # result = gt.GaussianResults(files=[os.path.splitext(val)[0] for val in glob.glob("../mccoy_hoono/explore_disps/*.gjf")])
-    # files=['../mccoy_hoono/explore_disps/hoono_r3_1p437917',
-    #        '../mccoy_hoono/explore_disps/hoono_a2_100p8428',
-    #        '../mccoy_hoono/explore_disps/hoono_d1_188p7757',
-    #        '../mccoy_hoono/explore_disps/hoono_a3_110p1829',
-    #        '../mccoy_hoono/explore_disps/hoono_r4_1p162801',
-    #        '../mccoy_hoono/explore_disps/hoono_r4_1p178656',
-    #        '../mccoy_hoono/explore_disps/hoono_a1_99p25636',
-    #        '../mccoy_hoono/explore_disps/hoono_d1_171p2242',
-    #        '../mccoy_hoono/explore_disps/hoono_a2_103p7522',
-    #        '../mccoy_hoono/explore_disps/hoono_r1_0p958995',
-    #        '../mccoy_hoono/explore_disps/hoono_r1_0p978956',
-    #        '../mccoy_hoono/explore_disps/hoono_a3_107p9562',
-    #        '../mccoy_hoono/explore_disps/hoono_r3_1p479650',
-    #        '../mccoy_hoono/explore_disps/hoono_a1_95p93353',
-    #        '../mccoy_hoono/explore_disps/hoono_r2_1p441450',
-    #        '../mccoy_hoono/explore_disps/hoono_r2_1p468388']
-    # hoono_eq_energy = -280.4467347
-    # results = misc.pull_displaced_results(eq_zmat=hoono_eq,
-    #                                       eq_energy=hoono_eq_energy,
-    #                                       files=files,
-    #                                       sec_der=True)
-    # result = gt.GaussianResults(files=[os.path.splitext(val)[0] for val in glob.glob("../mccoy_hoono/10cm_disp/*.gjf")])
+    #
+    hoono_eq_energy = -280.4467347
+    results = misc.pull_displaced_results(eq_zmat=hoono_eq,
+                                          eq_energy=hoono_eq_energy,
+                                          files=[os.path.splitext(val)[0] for val in glob.glob("../mccoy_hoono/single_coord_freq/hoono_*_*.log")],
+                                          eq_log = '../mccoy_hoono/hoono_eq')
+    d = misc.fourth_ders(results)
+    # result = gt.GaussianResults(files=files)
     # result = gt.GaussianResults(files=[os.path.splitext(val)[0] for val in glob.glob("../mccoy_hoono/30cm_disp/*.gjf")])
-    with GI.GaussianLogReader('../mccoy_hoono/explore_disps/hoono_d2_176p1845.log') as reader:
-        parse = reader.parse("InputZMatrix")
+    # with GI.GaussianLogReader('../hocl/oop_s_rOH_opt/clhocl/clhocl_0_sp.log') as reader:
+    #     parse = reader.parse("NBOSummary")
+    # l = ['../hocl/oop_s_rOH_opt/clhocl/clhocl_0_sp.log',
+    #      '../hocl/oop_s_rOH_opt/clhocl/clhocl_5_sp.log',
+    #      '../hocl/oop_s_rOH_opt/clhocl/clhocl_10_sp.log',
+    #      '../hocl/oop_s_rOH_opt/clhocl/clhocl_15_sp.log',
+    #      '../hocl/oop_s_rOH_opt/clhocl/clhocl_20_sp.log',
+    #      '../hocl/oop_s_rOH_opt/clhocl/clhocl_25_sp.log',
+    #      '../hocl/oop_s_rOH_opt/clhocl/clhocl_30_sp.log',
+    #      '../hocl/oop_s_rOH_opt/clhocl/clhocl_35_sp.log',
+    #      '../hocl/oop_s_rOH_opt/clhocl/clhocl_40_sp.log',
+    #      '../hocl/oop_s_rOH_opt/clhocl/clhocl_45_sp.log',
+    #      '../hocl/oop_s_rOH_opt/clhocl/clhocl_50_sp.log']
+    # N = gt.GLogInterpreter(log_files=l)
+    # N.pull_NBO()
+
+
     print("Hello")

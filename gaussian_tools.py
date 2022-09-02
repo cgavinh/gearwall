@@ -25,6 +25,7 @@ class GaussianResults:
         if not isinstance(files, list): self.files = [self.files]
         self._MP2Energy = None
         self._input_zmat = None
+        self.force_constants = None
 
     @property
     def MP2Energy(self):
@@ -53,8 +54,20 @@ class GaussianResults:
         for f in self.files:
             with GI.GaussianLogReader(f + '.log') as reader:
                 parse = reader.parse("InputZMatrix")
-            zmats.append(misc.zmat(g_str=parse["InputZMatrix"]))
+            if parse["InputZMatrix"] is None:
+                print(f'could not pull the z-matrix from {f}')
+                print(parse["InputZMatrix"])
+            new_zmat = misc.zmat(g_str=parse["InputZMatrix"])
+            zmats.append(new_zmat)
         return zmats
+
+    def pull_forces(self):
+        forces = []
+        for f in self.files:
+            with GI.GaussianLogReader(f + '.log') as reader:
+                parse = reader.parse("ForceConstants")
+            forces.append(parse["ForceConstants"])
+        self.force_constants=forces
 
 
 
@@ -82,6 +95,7 @@ class GLogInterpreter:
         self._dipole_moms = None
         self._input_zmat = None
         self.force_constants = None
+        self.NBO_Summary = None
 
     @property
     def Energy(self):
@@ -161,6 +175,26 @@ class GLogInterpreter:
                 parse = reader.parse("ForceConstants")
             forces= parse["ForceConstants"]
         self.force_constants=forces
+
+    def pull_NBO(self):
+        d = {}
+        ex = {'occupancy': [],
+                 'file': []}
+        for f in self.log_files:
+            with GI.GaussianLogReader(f) as reader:
+                parse = reader.parse("NBOSummary")
+            NBO= parse["NBOSummary"]
+            for o in range(len(NBO[0])):
+                if NBO[0][o] in d:
+                    d[NBO[0][o]]['occupancy'].append(NBO[1][o])
+                    d[NBO[0][o]]['file'].append(f)
+                else:
+                    new_d = copy.deepcopy(ex)
+                    new_d['occupancy'].append(NBO[1][o])
+                    new_d['file'].append(f)
+                    d[NBO[0][o]] = new_d
+        self.NBO_Summary = d
+
 
 
 

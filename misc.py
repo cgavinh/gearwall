@@ -12,7 +12,24 @@ from string import Template
 from McUtils import Data as McData
 import gaussian_tools as gt
 
-def pull_displaced_results(eq_zmat, eq_energy, files, sec_der = False):
+def fourth_ders(results):
+    der = {'disp_vals': [],
+           'fourth_ders': []}
+
+    derivatives = {}
+
+    for q in results:
+        new_q = copy.deepcopy(der)
+        eq_index = int((len(results[q]['disp_vals']) - 1) / 2)
+        for i in range(1, eq_index + 1):
+            h = results[q]['disp_vals'][eq_index + i]
+            new_q['disp_vals'].append(h)
+            new_q['fourth_ders'].append((results[q]['force_constants'][eq_index + i] +results[q]['force_constants'][eq_index - i] -2 * results[q]['force_constants'][eq_index]) /h**2)
+        derivatives[q] = new_q
+    return derivatives
+
+
+def pull_displaced_results(eq_zmat, eq_energy, files, eq_log):
     '''
     eq_energy in hartree
     outputs displaced energy in wavenumbers'''
@@ -20,10 +37,11 @@ def pull_displaced_results(eq_zmat, eq_energy, files, sec_der = False):
          'disp_vals': [],
          'disp_units': [],
          'disp_energies': [],
-         '2nd_der': np.NaN
+         'force_constants': []
          }
     results = {}
     gr = gt.GaussianResults(files = files)
+    gr.pull_forces()
     #results['filenames'] = files
     #results['disp_energies'] = gr.MP2Energy
     for i in range(len(files)):
@@ -35,17 +53,47 @@ def pull_displaced_results(eq_zmat, eq_energy, files, sec_der = False):
                     results[gr.input_zmat[i].coords[e].name]['disp_vals'].append(gr.input_zmat[i].coords[e].val - eq_zmat.coords[e].val)
                     results[gr.input_zmat[i].coords[e].name]['disp_units'].append(gr.input_zmat[i].coords[e].units)
                     results[gr.input_zmat[i].coords[e].name]['disp_energies'].append((gr.MP2Energy[i]-eq_energy)*McData.UnitsData.convert( "Hartrees","Wavenumbers"))
+                    results[gr.input_zmat[i].coords[e].name]['force_constants'].append(gr.force_constants[i][e][e])
                 else:
                     new_result = copy.deepcopy(r)
                     new_result['filenames'].append(files[i])
                     new_result['disp_vals'].append(gr.input_zmat[i].coords[e].val - eq_zmat.coords[e].val)
                     new_result['disp_units'].append(gr.input_zmat[i].coords[e].units)
                     new_result['disp_energies'].append((gr.MP2Energy[i]-eq_energy)*McData.UnitsData.convert( "Hartrees","Wavenumbers"))
+                    new_result['force_constants'].append(gr.force_constants[i][e][e])
                     results[gr.input_zmat[i].coords[e].name] = new_result
+    #Add equilibrium geometry and convert force units
+    eq = gt.GLogInterpreter(log_files=[eq_log + '.log'])
+    eq.pull_forces()
+    forces = convert_force_units(eq_zmat=eq_zmat, force_constants=eq.force_constants)
+    for r in results:
+        results[r]['filenames'].append("eq")
+        results[r]['disp_vals'].append(0)
+        results[r]['disp_units'].append(results[r]['disp_units'][-1])
+        results[r]['disp_energies'].append(0)
+        results[r]['force_constants'] = [a * McData.UnitsData.convert("Hartrees", "Wavenumbers") for a in
+                                         results[r]['force_constants']]
+        if results[r]['disp_units'][0] ==  "Angstroms":
+            results[r]['force_constants'] = [a * (1/McData.UnitsData.convert("BohrRadius", "Angstroms"))**2 for a in results[r]['force_constants']]
+        elif results[r]['disp_units'][0] ==  "Degrees":
+            results[r]['force_constants'] = [a * ((2 * np.pi) / 360)**2 for a in results[r]['force_constants']]
+        for e in range(len(eq_zmat.coords)):
+            if eq_zmat.coords[e].name == r:
+                results[r]['force_constants'].append(forces[e][e])
 
-    if sec_der:
-        for key in results:
-            results[key]['2nd_der'] = (results[key]['disp_energies'][0] + results[key]['disp_energies'][1])/results[key]['disp_vals'][0]**2
+    for key in results:
+        zipped_lists = zip(results[key]['disp_vals'],
+                           results[key]['filenames'],
+                           results[key]['disp_units'],
+                           results[key]['disp_energies'],
+                           results[key]['force_constants'])
+        sorted_pairs = sorted(zipped_lists) #sorts by items in the first list
+        tuples = zip(*sorted_pairs)
+        results[key]['disp_vals'], results[key]['filenames'],results[key]['disp_units'],results[key]['disp_energies'],results[key]['force_constants'] = [list(tuple) for tuple in tuples]
+
+    # if sec_der:
+    #     for key in results:
+    #         results[key]['2nd_der'] = (results[key]['disp_energies'][0] + results[key]['disp_energies'][1])/results[key]['disp_vals'][0]**2
     return results
 
 
@@ -77,7 +125,7 @@ def write_displaced_zmats(eq_zmat,
                           params={},
                           job_file_path='',
                           fchks=False):
-    with open(job_file_path + 'g16.sh', 'w', newline='\n') as sbatch:
+    with open(job_file_path + f'g16_{fname_base}_{disp_en}.sh', 'w', newline='\n') as sbatch:
         sbatch.write('#!/bin/bash\n')
         sbatch.write(sbatch_params)
         sbatch.write('\n# load Gaussian environment\nmodule load contrib/g16.b01\n\n# '
@@ -128,7 +176,7 @@ class zmat:
     #                                [180.]]),
     #             "units" : ["Angstroms", "Degrees"]}
 
-    def __init__(self, atoms=[], coords=None, charge=[0,1], easy_build_dict=None, g_str=None):
+    def __init__(self, atoms=None, coords=None, charge=[0,1], easy_build_dict=None, g_str=None):
         self.atoms=atoms
         self.coords=coords
         self.charge=charge
@@ -159,6 +207,7 @@ class zmat:
                     i += 1
         elif self.coords is None and self.g_str is not None:
             self.coords = []
+            self.atoms = []
             lines = g_str.splitlines()
             i = 0
             n = 0
@@ -199,6 +248,10 @@ class zmat:
                     for c in self.coords:
                         if c.name == l[0]:
                             c.val = float(l[1])
+        elif self.coords is None and self.g_str is None:
+            print(f'self.coords is None and self.g_str is None')
+            print(self.atoms)
+
 
 
 
