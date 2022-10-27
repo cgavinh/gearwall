@@ -1,5 +1,5 @@
 # CGH_Toolbox
-![alt text](https://github.com/cgavinh/CGH_Toolbox/blob/main/clhocl_oop_dvr_wfns.pdf)
+<img src="https://github.com/cgavinh/CGH_Toolbox/blob/main/clhocl_oop_dvr_wfns.pdf">
 
 # Purpose
 A rudimentary Python Package to hold all my code for Quantum chem research. It is all puprose-built and much of it too specific for generic use. 
