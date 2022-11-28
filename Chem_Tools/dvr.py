@@ -1,6 +1,6 @@
 import numpy as np
 from scipy import linalg
-from Chem_Tools import utilities as uts
+from Chem_Tools import chem_utilities as uts
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import pandas as pd
