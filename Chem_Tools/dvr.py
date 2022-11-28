@@ -1,10 +1,9 @@
 import numpy as np
 from scipy import linalg
-import utilities as uts
+from Chem_Tools import chem_utilities as uts
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import pandas as pd
-import dvr_arrays
 import math
 
 """
@@ -136,7 +135,7 @@ class AnalyzeDVR:
         self.results['kinetic'] = uts.Constants.convert(self.results['kinetic'], self.energy_units, to_AU=False)
 
 
-    def plot_wfns(self, states, on_pot=False, x_range=[], y_range=[], scale=1, save_file=''):
+    def plot_wfns(self, states, on_pot=False, x_range=[], y_range=[], scale=1, save_file='', x_title=''):
         if not len(x_range) > 1:
             x_range = [self.results['grid'].min(), self.results['grid'].max()]
         x_argmin = np.argmax(self.results['grid'] >= x_range[0])
@@ -149,8 +148,11 @@ class AnalyzeDVR:
         fig = plt.figure()
         ax = plt.axes()
         i=0
+        x_vals = self.results['grid'][x_argmin:x_argmax]
+        if self.grid_unit == "radians":
+            x_vals = x_vals*360/(2*np.pi)
         for state in states:
-            ax.plot(self.results['grid'][x_argmin:x_argmax],
+            ax.plot(x_vals,
                     (self.results['wfns'][:,state][x_argmin:x_argmax] * scale) + self.results['energies'][state],
                     label=r'$\psi_{%s}$' %state,
                     color=colors[i])
@@ -158,25 +160,30 @@ class AnalyzeDVR:
             i += 1
 
         if on_pot:
-            ax.plot(self.results['grid'][x_argmin:x_argmax],
+            ax.plot(x_vals,
                     self.results['potential'][x_argmin:x_argmax],
                     label="potential", color='black',
                     linewidth=2,
                     linestyle='--')
 
-        ax.set_xlim(x_range)
+        if self.grid_unit == 'radians':
+            ax.set_xlim([x_range[0]*360/(2*np.pi), x_range[1]*360/(2*np.pi)])
+        else: ax.set_xlim(x_range)
         if len(y_range) > 0:
             ax.set_ylim(y_range)
         #ax.set_xlabel(r'$\Delta r$')
-        plt.xlabel("rxn coordinate")
-        plt.ylabel("Energy (cm-1)", labelpad=15)
+        if len(x_title) > 0:
+            plt.xlabel(x_title)
+        else:
+            plt.xlabel("rxn coordinate")
+        plt.ylabel(r'Energy ($cm^{-1}$)', labelpad=15)
         plt.legend()
         plt.tight_layout()
         if save_file:
             plt.savefig(save_file)
         plt.show()
 
-    def plot_energies(self, energies_range=[], energy_step=1, save_file='', x_range=[], y_range=[]):
+    def plot_energies(self, energies_range=[], energy_step=1, save_file='', x_range=[], y_range=[], x_title=''):
         if not len(x_range) > 1:
             x_range = [self.results['grid'].min(), self.results['grid'].max()]
         x_argmin = np.argmax(self.results['grid'] >= x_range[0])
@@ -204,14 +211,17 @@ class AnalyzeDVR:
         ax.set_xlim(x_range)
         if len(y_range) > 0:
             ax.set_ylim(y_range)
-        plt.xlabel("rxn coordinate (Angstroms)")
-        plt.ylabel("Energy (cm-1)", labelpad=15)
+        if len(x_title) > 0:
+            plt.xlabel(x_title)
+        else:
+            plt.xlabel("rxn coordinate")
+        plt.ylabel(r'Energy ($cm^{-1}$)', labelpad=15)
         plt.tight_layout()
         if save_file:
             plt.savefig(save_file)
         plt.show()
 
-    def plot_ind_wfns(self, wfns_range=[0,8], wfns_step=1, scale=1, x_range=[], y_range=[], save_file=''):
+    def plot_ind_wfns(self, wfns_range=[0,8], wfns_step=1, scale=1, x_range=[], y_range=[], save_file='', x_title=''):
         if not len(x_range) > 1:
             x_range = [self.results['grid'].min(), self.results['grid'].max()]
         x_argmin = np.argmax(self.results['grid'] >= x_range[0])
@@ -249,8 +259,11 @@ class AnalyzeDVR:
         fig.add_subplot(111, frameon=False)
         # hide tick and tick label of the big axis
         plt.tick_params(labelcolor='none', which='both', top=False, bottom=False, left=False, right=False)
-        plt.xlabel("rxn coordinate (Angstroms)")
-        plt.ylabel("Energy (cm-1)", labelpad=15)
+        if len(x_title) > 0:
+            plt.xlabel(x_title)
+        else:
+            plt.xlabel("rxn coordinate")
+        plt.ylabel(r'Energy ($cm^{-1}$)', labelpad=15)
         #plt.subplots_adjust(wspace=0, hspace=0)
         plt.tight_layout()
         if save_file:

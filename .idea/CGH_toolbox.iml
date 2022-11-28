@@ -4,8 +4,6 @@
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="jdk" jdkName="Python 3.8 (CGH_Toolbox)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="QOOH_repo" />
-    <orderEntry type="module" module-name="McUtils" />
-    <orderEntry type="module" module-name="hocl" />
+    <orderEntry type="module" module-name="McCode Academy" />
   </component>
 </module>
