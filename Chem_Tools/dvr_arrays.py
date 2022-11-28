@@ -1,8 +1,6 @@
 import numpy as np
-import utilities as ut
-import gaussian_tools as gt
-from scipy import interpolate
-import matplotlib.pyplot as plt
+from Chem_Tools import gaussian_tools as gt
+
 
 class CM_1D_kin_mat:
     def __init__(self,

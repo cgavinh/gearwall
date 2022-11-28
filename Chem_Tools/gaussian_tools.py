@@ -4,12 +4,10 @@ sys.path.append("/Users/coire/McCoy/") #Path to McUtils, References..etc
 import numpy as np
 import copy
 import McUtils.GaussianInterface as GI
-import os, re
+import os
 import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
-import density_cube as dc
-from string import Template
-import misc
+from Chem_Tools import misc, density_cube as dc
+
 
 class GaussianResults:
     '''

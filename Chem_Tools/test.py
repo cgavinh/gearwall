@@ -1,13 +1,9 @@
-import density_cube
-import gaussian_tools as gt
 import glob
-from string import Template
 import sys
-import misc
+from Chem_Tools import misc
 import os
-sys.path.append('../mccoy_hoono/')
+sys.path.append('../../mccoy_hoono/')
 import numpy as np
-import McUtils.GaussianInterface as GI
 
 if __name__ == "__main__":
     atoms = ['H', 'O', 'O', 'N', 'O']

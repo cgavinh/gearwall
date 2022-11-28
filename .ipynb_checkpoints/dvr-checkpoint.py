@@ -1,9 +1,8 @@
 import numpy as np
 from scipy import linalg
-import utilities as uts
+from Chem_Tools import utilities as uts
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
-import dvr_arrays
 import math
 
 """

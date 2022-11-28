@@ -1,8 +1,5 @@
 # A space to test DVR code
-import dvr
-import dvr_arrays
-import utilities as uts
-import gaussian_tools as gt
+from Chem_Tools import dvr, gaussian_tools as gt, utilities as uts, dvr_arrays
 import numpy as np
 from scipy import interpolate
 

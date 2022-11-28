@@ -1,16 +1,10 @@
 import sys
 sys.path.append("/Users/coire/McCoy/") #Path to McUtils, References..etc
 import numpy as np
-import utilities as uts
 import copy
-import McUtils.GaussianInterface as GI
-import os, re
-import matplotlib.pyplot as plt
-from mpl_toolkits import mplot3d
-import density_cube as dc
-from string import Template
 from McUtils import Data as McData
-import gaussian_tools as gt
+from Chem_Tools import gaussian_tools as gt
+
 
 def fourth_ders(results):
     der = {'disp_vals': [],
