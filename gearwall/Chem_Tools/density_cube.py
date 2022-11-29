@@ -7,7 +7,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import numpy.linalg as la
 import sys
 sys.path.append("../../")
-sys.path.append("../../CGH_Toolbox")
+sys.path.append("..")
 
 
 
